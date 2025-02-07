@@ -10,8 +10,6 @@ from datetime import datetime
 
 # Get current date and time
 current_time = datetime.now()
-
-# Format the date and time
 formatted_time = current_time.strftime("%Y_%m_%d_%H_%M_%S")
 
 # Create the FastAPI app
@@ -81,7 +79,7 @@ async def modify_string(data: InputString):
     table_schema = "\n".join([f"{col} ({dtype})" for col, dtype in df.dtypes])
 
     # Debugging: Print table schema
-    # print("Extracted Table Schema:\n", table_schema)
+    print("Extracted Table Schema:\n", table_schema)
 
     # Modify Ollama system prompt to include schema
     res = ollama.generate(
@@ -90,26 +88,49 @@ async def modify_string(data: InputString):
         prompt=input_data
     )
     sql_query = res.response
+    print("Generated SQL Query:\n", sql_query)
 
     # Create a temporary SQL view
     df.createOrReplaceTempView("temp_view")
 
-    output_df = spark.sql(sql_query)
+    try:
+        output_df = spark.sql(sql_query)
+    except Exception as e:
+        error_message = str(e)
+        prompt_text = (
+            f"The following Spark error occurred:\n\n"
+            f"{error_message}\n\n"
+            f"Please analyze this error and suggest possible solutions."
+        )   
+        response = ollama.generate(
+            model="llama3.2",
+            system="You are an AI that helps troubleshoot Apache Spark errors. Provide clear, concise solutions.",
+            prompt=prompt_text
+        )
 
-    output_path = "/mnt/c/Users/arssh/OneDrive/Desktop/PROJECT/Output/out"
+        err = response.response
+        return {
+            "error": "SQL execution failed",
+            "sql_query": sql_query,
+            "error_details": err
+        } 
     
+    output_dir = "/mnt/c/Users/arssh/OneDrive/Desktop/PROJECT/Output/"
+    temp_output_path = os.path.join(output_dir, "out")
+
     # Save DataFrame to a CSV file (overwrite existing file)
-    output_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(output_path)
+    output_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(temp_output_path)
 
     # Move and rename the output file
-    files = os.listdir(output_path)
-    output_file = f"/mnt/c/Users/arssh/OneDrive/Desktop/PROJECT/Output/{formatted_time}_{file_name}"
+    files = os.listdir(temp_output_path)
+    output_file = os.path.join(output_dir, f"{formatted_time}_{file_name}.csv")
+
     for file in files:
         if file.startswith("part-"):  # Identify the actual CSV file
-            shutil.move(os.path.join(output_path, file), output_file)
+            shutil.move(os.path.join(temp_output_path, file), output_file)
 
-    # Remove the directory after renaming the file
-    shutil.rmtree(output_path)
+    # Remove the temporary output directory
+    shutil.rmtree(temp_output_path, ignore_errors=True)
 
     # Store response in MySQL
     store_in_mysql(file_name, input_data, sql_query, output_file)
