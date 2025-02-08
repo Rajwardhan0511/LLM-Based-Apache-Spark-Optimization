@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="table_container">
+        <h2>Query History</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Input File</th>
+                    <th>Query Entered</th>
+                    <th>Generated SQL Query</th>
+                    <th>Output File</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.input_file_name }}</td>
+                    <td>{{ record.input_data }}</td>
+                    <td><code>{{ record.sql_query }}</code></td>
+                    <td>{{ record.output_file }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            {% if page > 1 %}
+                <a href="{{ url_for('history', page=page-1) }}">Prev</a>
+            {% endif %}
+            {% if has_next %}
+                <a href="{{ url_for('history', page=page+1) }}">Next</a>
+            {% endif %}
+        </div>
+
+        <br>
+            <button onclick="window.location.href='/'">Back</button> <!-- Redirects back to index -->
+        </br>
+    </div>
+</body>
+</html>
