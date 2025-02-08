@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Solution</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        h2 {
+            color: #d9534f;
+        }
+
+        pre {
+            background: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .solution {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #dff0d8;
+            border-left: 5px solid #4CAF50;
+            border-radius: 5px;
+        }
+    </style> -->
+</head>
+<body>
+
+<div class="err-container">
+    <h2>Error Details</h2>
+    <br>
+    <p><strong>Input File:</strong></p>
+    <pre>{{ file_name }}</pre>
+    <br>
+    <p><strong>Table Schema:</strong></p>
+    <pre>{{ table_schema }}</pre>
+    <br>
+    <p><strong>SQL Query:</strong></p>
+    <pre>{{ sql_query }}</pre>
+    <br>
+    <!-- <p class="error"><strong>Error Message:</strong></p>
+    <pre>{{ error_message }}</pre> -->
+    <div class="error">
+        <h3 class="er">Error Message:</h3>
+        <p>{{ error_message }}</p>
+    </div>
+    <br>
+    <div class="solution">
+        <h3>Suggested Solution:</h3>
+        <p>{{ err }}</p>
+    </div>
+    <br>
+    <button onclick="window.location.href='/'">Back</button> <!-- Redirects back to index -->
+    </br>
+    <button onclick="window.location.href='/history'">History</button>
+</div>
+
+</body>
+</html>
