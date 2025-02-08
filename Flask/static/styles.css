@@ -1,0 +1,309 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Stylish Background */
+body {
+    font-family: 'Arial', sans-serif;
+    background: url("{{ url_for('static', filename='bg.jpg') }}") no-repeat center center fixed;
+    background-size: cover;
+    color: #ffffff;
+    text-align: center;
+}
+
+/* Container Styling */
+.container {
+    max-width: 500px;
+    background: rgba(0, 0, 0, 0.8); /* Dark overlay for readability */
+    padding: 30px;
+    margin: 80px auto;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.2);
+}
+
+/* .table_container{
+    max-width: 950px;
+    background: rgba(0, 0, 0, 0.8); /* Dark overlay for readability */
+    /* padding: 45px;
+    margin: 90px auto;
+    border-radius: 15px;
+    box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.2); */
+/* } */
+/* Heading Style */
+h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #00eaff; /* Neon blue for tech look */
+}
+
+/* Label Styling */
+label {
+    font-size: 16px;
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+}
+
+/* Input & Textarea */
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Textarea Specific */
+textarea {
+    height: 80px;
+    resize: none;
+}
+
+/* Button Styling */
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background-color: #00eaff; /* Neon blue */
+    color: #000;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+/* History Button */
+button.history {
+    background-color: #ffcc00;
+}
+
+button.history:hover {
+    background-color: #ffaa00;
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    background: #fff;
+}
+
+.input-container input {
+    border: none;
+    outline: none;
+    flex-grow: 1;
+    padding: 8px;
+    font-size: 16px;
+}
+
+.input-container span {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    padding: 0 5px;
+}
+
+.table-container {
+    width: 90%; /* Increase the width to 90% of the page */
+    margin: 20px auto; /* Center the table */
+    overflow-x: auto; /* Enable horizontal scrolling if needed */
+}
+
+h2{
+    margin-top: 20px;
+    color: #007bff;
+}
+
+table {
+    width: 100%; /* Make the table take full width of its container */
+    border-collapse: collapse;
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow:  0px 0px 20px rgba(255, 255, 255, 0.2);
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-size: 16px;
+}
+
+th {
+    background-color: #00eaff;
+    color: #000;
+}
+
+td a {
+    color: #00eaff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+td a:hover {
+    text-decoration: underline;
+    color: #007bff;
+}
+
+
+    
+.pagination {
+    display: flex;
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border: none;
+    cursor: pointer;
+    gap: 5px; /* Adds spacing between buttons */
+}
+
+.pagination a {
+    flex: 1; /* Makes each button take equal width */
+    text-align: center;
+    padding: 12px;
+    background-color: #00eaff; /* Neon blue */
+    color: #000;
+    font-size: 16px;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    text-decoration: none;
+}
+
+.pagination a:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    color: #fff;
+}
+
+.pagination a:disabled,
+.pagination a[disabled] {
+    background-color: #ccc;
+    cursor: not-allowed;
+    pointer-events: none;
+    color: #666;
+}
+
+
+/* body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 500px;
+    background: white;
+    padding: 20px;
+    margin: auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+h2 {
+    text-align: center;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #218838;
+}
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    background: white;
+    padding: 20px;
+    margin: auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+}
+
+h2 {
+    text-align: center;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #28a745;
+    color: white;
+}
+
+.pagination {
+    margin: 20px;
+}
+
+.pagination a {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.pagination a:hover {
+    background-color: #0056b3;
+}
+
+button {
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+button:hover {
+    background-color: #218838;
+} */
