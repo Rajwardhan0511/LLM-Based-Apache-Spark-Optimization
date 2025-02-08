@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Magic: Generate Queries Effortlessly</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+        
+</head>
+<body>
+    <div class="container">
+        <h2>SQL Magic: Generate Queries Effortlessly</h2>
+        <form action="/process-data/" method="POST">
+            <!-- <label for="file_name">CSV File Name:</label>
+            <input type="text" id="file_name" name="file_name" required placeholder="Enter file name"> -->
+            <label for="file_name">CSV File Name:</label>
+            <div class="input-container">
+                <input type="text" id="file_name" name="file_name" required placeholder="Enter CSV file name" oninput="updateFileName()">
+                <span>.csv</span>
+            </div>
+
+            <label for="input_text">Enter Query:</label>
+            <textarea id="input_text" name="input_text" required placeholder="Example: Select all records"></textarea>
+
+            <button type="submit">Submit</button>
+        </form>
+        
+        <br>
+        <button onclick="window.location.href='/history'">History</button> <!-- Redirects to history page -->
+    </div>
+</body>
+</html>
