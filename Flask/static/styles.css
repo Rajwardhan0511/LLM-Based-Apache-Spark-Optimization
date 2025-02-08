@@ -24,14 +24,6 @@ body {
     box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.2);
 }
 
-/* .table_container{
-    max-width: 950px;
-    background: rgba(0, 0, 0, 0.8); /* Dark overlay for readability */
-    /* padding: 45px;
-    margin: 90px auto;
-    border-radius: 15px;
-    box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.2); */
-/* } */
 /* Heading Style */
 h2 {
     font-size: 24px;
@@ -195,6 +187,76 @@ td a:hover {
     color: #666;
 }
 
+
+
+/* ######################################################################## */
+.result-container {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 10px 0;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+.err-container {
+    max-width: 950px;
+    background: rgba(0, 0, 0, 0.85); /* Slightly darker for readability */
+    padding: 30px;
+    margin: 20px auto;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.2);
+    color: #ffffff; /* Ensures text is visible on dark background */
+    font-family: Arial, sans-serif;
+}
+
+h2 {
+    color: #007bff; /* Lighter heading colors for contrast */
+}
+
+pre {
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #1e1e1e; /* Darker background for better readability */
+    color: #ffffff; /* White font color */
+    overflow-x: auto;
+    font-size: 14px;
+    font-family: Consolas, "Courier New", monospace;
+    white-space: pre-wrap; /* Allows text to wrap within the container */
+    word-wrap: break-word; /* Ensures long words break */
+    overflow-x: hidden;
+}
+
+.error {
+    margin-top: 20px;
+    padding: 15px;
+    border-left: 5px solid #ff4d4d;
+    border-radius: 5px;
+    background: rgba(255, 77, 77, 0.1); /* Light red tint */
+    font-size: 14px;
+    word-wrap: break-word;  /* Break long words */
+    white-space: normal;    /* Ensure text wraps */
+    overflow-wrap: break-word; /* Ensures text stays within the container */
+}
+
+.er {
+    color: #ff4d4d;
+}
+
+.solution {
+    margin-top: 20px;
+    padding: 15px;
+    border-left: 5px solid #4CAF50;
+    border-radius: 5px;
+    background: rgba(76, 175, 80, 0.1); /* Light green tint for visibility */
+    font-size: 14px;
+}
+
+h3 {
+    color: green;
+}
 
 /* body {
     font-family: Arial, sans-serif;

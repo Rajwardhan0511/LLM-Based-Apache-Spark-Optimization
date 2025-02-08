@@ -7,20 +7,27 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div class="container">
+    <div class="err-container">
         <h2>Query Execution Results</h2>
         {% if result %}
-            <p><strong>Input File:</strong> {{ result.input_file_name }}</p>
-            <p><strong>Query Entered:</strong> {{ result.input_text }}</p>
-            <p><strong>Generated SQL Query:</strong> <code>{{ result.sql_query }}</code></p>
-            <p><strong>Output File:</strong> {{ result.output_file }}</p>
+            <p><strong>Input File:</strong></p>
+            <pre>{{ result.input_file_name }}</pre>
+            <br>
+            <p><strong>Query Entered:</strong></p>
+            <pre>{{ result.input_text }}</pre>
+            <br>
+            <p><strong>Generated SQL Query:</strong> <code></code></p>
+            <pre>{{ result.sql_query }}</pre>
+            <br>
+            <p><strong>Output File:</strong></p>
+            <pre>{{ result.output_file }}</pre>
+            <br>
         {% else %}
             <p>No results available.</p>
         {% endif %}
-    </div>
-    <br>
-    <button onclick="window.location.href='/'">Back</button> <!-- Redirects back to index -->
-    </br>
-    <button onclick="window.location.href='/history'">History</button>
+        <button onclick="window.location.href='/'">Back</button> <!-- Redirects back to index -->
+        </br>
+        <button onclick="window.location.href='/history'">History</button>
+    </div>    
 </body>
 </html>

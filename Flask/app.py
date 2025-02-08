@@ -89,10 +89,7 @@ def process_data():
         # Create temp view in Spark
         df.createOrReplaceTempView("temp_view")
 
-        try:
-            output_df = spark.sql(sql_query)
-        except Exception as e:
-            return jsonify({"error": str(e), "sql_query": sql_query}), 500
+        output_df = spark.sql(sql_query)
 
         # Save output to CSV
         temp_output_path = os.path.join(OUTPUT_PATH, "out")
@@ -118,13 +115,44 @@ def process_data():
             "input_file_name": file_name,
             "input_text": input_text,
             "sql_query": sql_query,
-            "output_file": output_file
+            "output_file": out
         }
         return redirect(url_for("show_result"))
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        error_message = str(e)
+        prompt_text = (
+            f"The following Spark error occurred:\n\n"
+            f"{error_message}\n\n"
+            f"Please analyze this error and suggest possible solutions."
+        )   
+        response = ollama.generate(
+            model="llama3.2",
+            system="You are an AI that helps troubleshoot Apache Spark errors. Provide clear, concise solutions.",
+            prompt=prompt_text
+        )
 
+        err = response.response
+
+        # Redirect to error solution page with details
+        return redirect(url_for("err_sol", file_name=file_name, table_schema=table_schema, sql_query=sql_query, error_message=error_message, err=err))
+
+@app.route("/err_sol")
+def err_sol():
+    """Render the error solution page."""
+    error_message = request.args.get("error_message", "Unknown error")
+    err = request.args.get("err", "No solution available")
+    file_name = request.args.get("file_name", "Unknown")
+    table_schema = request.args.get("table_schema", "Unknown")
+    sql_query = request.args.get("sql_query", "Unknown")
+    return render_template(
+        "err_sol.html",
+        error_message=error_message,
+        err=err,
+        file_name=file_name,
+        table_schema=table_schema,
+        sql_query=sql_query
+    )
 
 @app.route("/show")
 def show_result():
