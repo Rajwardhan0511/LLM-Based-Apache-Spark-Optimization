@@ -7,6 +7,7 @@ import ollama
 import mysql.connector
 from datetime import datetime
 import subprocess
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # Required for session handling
@@ -15,7 +16,7 @@ CORS(app)  # Enable CORS for frontend communication
 # Initialize Spark session
 spark = SparkSession.builder.appName("Flask-Spark").getOrCreate()
 
-# Define folder paths
+# Define folder paths F:\Flask\Input
 INPUT_PATH = "/mnt/c/Users/arssh/OneDrive/Desktop/PROJECT/Input/"
 OUTPUT_PATH = "/mnt/c/Users/arssh/OneDrive/Desktop/PROJECT/Output/"
 # Get current timestamp
@@ -60,22 +61,26 @@ def home():
 def process_data():
     """Process CSV data, generate SQL query using AI, execute Spark SQL, and return results."""
     try:
-        file_name = request.form["file_name"]
+        file_name = request.files["file_name"]
         input_text = request.form["input_text"]
 
-        if not file_name.lower().endswith('.csv'):
-            file_name += '.csv'
-
-        file_path = os.path.join(INPUT_PATH, file_name)
-        if not os.path.exists(file_path):
-            return jsonify({"error": f"CSV file not found: {file_path}"}), 400
-
+        # Save the prescription file in the folder
+        prescr_filename = secure_filename(f"{file_name.filename}")
+        prescr_filepath = os.path.join(INPUT_PATH, prescr_filename)
+        
+        # Ensure the file is overwritten if it already exists
+        if os.path.exists(prescr_filepath):
+            os.remove(prescr_filepath)  # Delete the existing file
+            print("File deleted.")
+        
+        file_name.save(prescr_filepath)
+        print("File save")
+        
         # Read CSV into DataFrame
-        df = spark.read.csv(file_path, header=True, inferSchema=True)
+        df = spark.read.csv(prescr_filepath, header=True, inferSchema=True)
 
         # Extract schema
         table_schema = "\n".join([f"{col} ({dtype})" for col, dtype in df.dtypes])
-        print("Extracted Table Schema:\n", table_schema)
 
         # Generate SQL query using AI
         res = ollama.generate(
@@ -84,7 +89,7 @@ def process_data():
             prompt=input_text
         )
         sql_query = res.response
-        print("Generated SQL Query:\n", sql_query)
+        print("SQL query generated succesfully.")
 
         # Create temp view in Spark
         df.createOrReplaceTempView("temp_view")
@@ -96,7 +101,7 @@ def process_data():
         output_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(temp_output_path)
 
         # Move and rename the output file
-        out = f"{formatted_time}_{file_name}"
+        out = f"{formatted_time}_{prescr_filename}"
         output_file = os.path.join(OUTPUT_PATH, out)
         for file in os.listdir(temp_output_path):
             if file.startswith("part-"):
@@ -108,14 +113,14 @@ def process_data():
         output_file = 'C:'+file_mod
         # Store details in MySQL
         
-        store_in_mysql(file_name, input_text, sql_query, out)
+        store_in_mysql(prescr_filename, input_text, sql_query, out)
 
         # Store data in session and redirect to results page
         session["result"] = {
-            "input_file_name": file_name,
+            "input_file_name": prescr_filename,
             "input_text": input_text,
             "sql_query": sql_query,
-            "output_file": out
+            "output_file": output_file
         }
         return redirect(url_for("show_result"))
 
@@ -197,6 +202,21 @@ def history():
 
     return render_template("hist.html", records=records, page=page, has_next=has_next)
 
+
+@app.route('/open/<filename>')
+def open_file(filename):
+    FILE_PATH = r"C:/Users/arssh/OneDrive/Desktop/PROJECT/Output/"
+    file_location = os.path.join(FILE_PATH, filename)
+    file_location = os.path.normpath(file_location)
+    if os.path.exists(file_location):
+        try:
+            subprocess.run(["explorer.exe", file_location], shell=True)
+            #subprocess.run(["explorer", file_location], shell=True)  # Opens the file in the default program
+            return jsonify({"status": "success", "message": f"Opening {filename}"})
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)})
+    
+    return jsonify({"status": "error", "Path": file_location, "message": "File not found"}), 404
 
 if __name__ == "__main__":
     app.run(debug=True)

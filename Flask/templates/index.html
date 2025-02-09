@@ -5,18 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI powered SparkSQL Studio</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
-        
 </head>
 <body>
     <div class="container">
         <h2>AI powered SparkSQL Studio</h2>
-        <form action="/process-data/" method="POST">
+        <form action="/process-data/" method="POST" enctype="multipart/form-data">
             <label for="file_name">CSV File Name:</label>
-            <div class="input-container">
-                <input type="text" id="file_name" name="file_name" required placeholder="Enter CSV file name" oninput="updateFileName()">
-                <span>.csv</span>
-            </div>
+            <input required="required" type="file" name="file_name" id="file_name" onchange="showFileName()">
 
             <label for="input_text">Enter Query:</label>
             <textarea id="input_text" name="input_text" required placeholder="Example: Select all records"></textarea>
