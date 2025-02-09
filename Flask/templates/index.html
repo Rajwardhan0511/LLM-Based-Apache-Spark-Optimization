@@ -1,26 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI powered SparkSQL Studio</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Include jQuery -->
 </head>
+
 <body>
     <div class="container">
         <h2>AI powered SparkSQL Studio</h2>
-        <form action="/process-data/" method="POST" enctype="multipart/form-data">
+
+        <form id="uploadForm" action="/process-data/" method="POST" enctype="multipart/form-data">
             <label for="file_name">CSV File Name:</label>
-            <input required="required" type="file" name="file_name" id="file_name" onchange="showFileName()">
+            <input required="required" type="file" name="file_name" id="file_name">
 
             <label for="input_text">Enter Query:</label>
             <textarea id="input_text" name="input_text" required placeholder="Example: Select all records"></textarea>
 
             <button type="submit">Submit</button>
         </form>
-        
+
         <br>
-        <button onclick="window.location.href='/history'">History</button> <!-- Redirects to history page -->
+        <button onclick="window.location.href='/history'">History</button>
+        <br>
+        <!-- Loading Section -->
+        <div id="loading" style="display: none;">
+            <br>
+            <p id="statusMessage">Processing...</p>
+        </div>
     </div>
+
+    <script>
+        $(document).ready(function () {
+            $("#uploadForm").on("submit", function (event) {
+                event.preventDefault(); // Prevent default form submission
+
+                $("#loading").show();
+                $("#statusMessage").text("Uploading file...");
+
+                let formData = new FormData(this);
+
+                $.ajax({
+                    url: "/process-data/",
+                    type: "POST",
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    xhr: function () {
+                        var xhr = new XMLHttpRequest();
+                        xhr.upload.addEventListener("progress", function (event) {
+                            if (event.lengthComputable) {
+                                let percentComplete = Math.round((event.loaded / event.total) * 100);
+                                $("#statusMessage").text("Uploading file... " + percentComplete + "%");
+                            }
+                        }, false);
+                        return xhr;
+                    },
+                    success: function (response) {
+                        if (response.redirect) {
+                            window.location.href = response.redirect; // Perform manual redirection
+                        } else {
+                            $("#statusMessage").text("Processing completed, but no redirect URL found.");
+                        }
+                    },
+                    error: function () {
+                        $("#statusMessage").text("An error occurred while processing.");
+                    }
+                });
+                // Fetch status updates every 2 seconds
+                let interval = setInterval(function () {
+                    $.get("/status", function (data) {
+                        if (data.status == "done") {
+                            clearInterval(interval);
+                            if (data.redirect) {
+                                let redirectURL = new URL(data.redirect, window.location.origin);
+                                window.location.href = redirectURL.href;
+                            } else {
+                                $("#statusMessage").text("Processing completed, but no redirect URL provided.");
+                            }
+                        } else {
+                            $("#statusMessage").text(data.message);
+                        }
+                    });
+                }, 1000);
+            });
+        });
+
+
+    </script>
 </body>
+
+
 </html>

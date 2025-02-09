@@ -6,7 +6,6 @@ from pyspark.sql import SparkSession
 import ollama
 import mysql.connector
 from datetime import datetime
-import subprocess
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -56,47 +55,67 @@ def home():
     """Render the input form."""
     return render_template("index.html")
 
+status_message = {"status": "idle", "message": "Waiting for input"}
+
+@app.route("/status")
+def get_status():
+    """Return the latest status update."""
+    return jsonify(status_message)
+
+def update_status(message):
+    """Update global status message."""
+    global status_message
+    status_message["status"] = "running"
+    status_message["message"] = message
 
 @app.route("/process-data/", methods=["POST"])
 def process_data():
     """Process CSV data, generate SQL query using AI, execute Spark SQL, and return results."""
     try:
-        file_name = request.files["file_name"]
-        input_text = request.form["input_text"]
+        update_status("Uploading file...")
+        file_name = request.files.get("file_name")
+        input_text = request.form.get("input_text", "")
 
-        # Save the prescription file in the folder
-        prescr_filename = secure_filename(f"{file_name.filename}")
+        if not file_name:
+            return jsonify({"error": "No file provided!"}), 400
+
+        # Save the file
+        prescr_filename = secure_filename(file_name.filename)
         prescr_filepath = os.path.join(INPUT_PATH, prescr_filename)
-        
+
         # Ensure the file is overwritten if it already exists
         if os.path.exists(prescr_filepath):
             os.remove(prescr_filepath)  # Delete the existing file
-            print("File deleted.")
         
         file_name.save(prescr_filepath)
-        print("File save")
-        
+
         # Read CSV into DataFrame
+        update_status("CSV file loading into Spark.")
         df = spark.read.csv(prescr_filepath, header=True, inferSchema=True)
+        
 
         # Extract schema
         table_schema = "\n".join([f"{col} ({dtype})" for col, dtype in df.dtypes])
 
         # Generate SQL query using AI
+        update_status("Generating SQL query...")
         res = ollama.generate(
             model="duckdb-nsql",
             system=f"Table name is temp_view. The structure of the table is:\n{table_schema}",
             prompt=input_text
         )
         sql_query = res.response
-        print("SQL query generated succesfully.")
+        update_status("SQL query generated successfully.")
 
         # Create temp view in Spark
+        update_status("Executing query in Spark...")
+        
         df.createOrReplaceTempView("temp_view")
-
+        
         output_df = spark.sql(sql_query)
 
         # Save output to CSV
+        update_status("Saving results to CSV...")
         temp_output_path = os.path.join(OUTPUT_PATH, "out")
         output_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(temp_output_path)
 
@@ -109,20 +128,27 @@ def process_data():
 
         shutil.rmtree(temp_output_path, ignore_errors=True)
 
-        file_mod = output_file[6:]
-        output_file = 'C:'+file_mod
         # Store details in MySQL
-        
+        update_status("Saving results to MySQL...")
         store_in_mysql(prescr_filename, input_text, sql_query, out)
 
-        # Store data in session and redirect to results page
+        
+
+        file_mod = output_file[6:]
+        output_file = 'C:' + file_mod
+
+        # Store data in session
         session["result"] = {
             "input_file_name": prescr_filename,
             "input_text": input_text,
             "sql_query": sql_query,
             "output_file": output_file
         }
-        return redirect(url_for("show_result"))
+        # Update status to done
+        status_message["status"] = "done"
+
+        return jsonify({"redirect": url_for("show_result")})
+
 
     except Exception as e:
         error_message = str(e)
@@ -140,7 +166,7 @@ def process_data():
         err = response.response
 
         # Redirect to error solution page with details
-        return redirect(url_for("err_sol", file_name=file_name, table_schema=table_schema, sql_query=sql_query, error_message=error_message, err=err))
+        return redirect(url_for("err_sol", file_name=prescr_filename, table_schema=table_schema, sql_query=sql_query, error_message=error_message, err=err))
 
 @app.route("/err_sol")
 def err_sol():
@@ -201,22 +227,6 @@ def history():
             conn.close()
 
     return render_template("hist.html", records=records, page=page, has_next=has_next)
-
-
-@app.route('/open/<filename>')
-def open_file(filename):
-    FILE_PATH = r"C:/Users/arssh/OneDrive/Desktop/PROJECT/Output/"
-    file_location = os.path.join(FILE_PATH, filename)
-    file_location = os.path.normpath(file_location)
-    if os.path.exists(file_location):
-        try:
-            subprocess.run(["explorer.exe", file_location], shell=True)
-            #subprocess.run(["explorer", file_location], shell=True)  # Opens the file in the default program
-            return jsonify({"status": "success", "message": f"Opening {filename}"})
-        except Exception as e:
-            return jsonify({"status": "error", "message": str(e)})
-    
-    return jsonify({"status": "error", "Path": file_location, "message": "File not found"}), 404
 
 if __name__ == "__main__":
     app.run(debug=True)
