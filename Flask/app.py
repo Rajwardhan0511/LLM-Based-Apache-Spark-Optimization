@@ -198,20 +198,5 @@ def history():
     return render_template("hist.html", records=records, page=page, has_next=has_next)
 
 
-@app.route('/open/<filename>')
-def open_file(filename):
-    FILE_PATH = r"C:/Users/arssh/OneDrive/Desktop/PROJECT/Output/"
-    file_location = os.path.join(FILE_PATH, filename)
-    file_location = os.path.normpath(file_location)
-    if os.path.exists(file_location):
-        try:
-            subprocess.run(["explorer.exe", file_location], shell=True)
-            #subprocess.run(["explorer", file_location], shell=True)  # Opens the file in the default program
-            return jsonify({"status": "success", "message": f"Opening {filename}"})
-        except Exception as e:
-            return jsonify({"status": "error", "message": str(e)})
-    
-    return jsonify({"status": "error", "Path": file_location, "message": "File not found"}), 404
-
 if __name__ == "__main__":
     app.run(debug=True)
