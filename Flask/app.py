@@ -55,18 +55,22 @@ def home():
     """Render the input form."""
     return render_template("index.html")
 
+
 status_message = {"status": "idle", "message": "Waiting for input"}
+
 
 @app.route("/status")
 def get_status():
     """Return the latest status update."""
     return jsonify(status_message)
 
+
 def update_status(message):
     """Update global status message."""
     global status_message
     status_message["status"] = "running"
     status_message["message"] = message
+
 
 @app.route("/process-data/", methods=["POST"])
 def process_data():
@@ -76,9 +80,6 @@ def process_data():
         file_name = request.files.get("file_name")
         input_text = request.form.get("input_text", "")
 
-        if not file_name:
-            return jsonify({"error": "No file provided!"}), 400
-
         # Save the file
         prescr_filename = secure_filename(file_name.filename)
         prescr_filepath = os.path.join(INPUT_PATH, prescr_filename)
@@ -86,13 +87,12 @@ def process_data():
         # Ensure the file is overwritten if it already exists
         if os.path.exists(prescr_filepath):
             os.remove(prescr_filepath)  # Delete the existing file
-        
+
         file_name.save(prescr_filepath)
 
         # Read CSV into DataFrame
         update_status("CSV file loading into Spark.")
         df = spark.read.csv(prescr_filepath, header=True, inferSchema=True)
-        
 
         # Extract schema
         table_schema = "\n".join([f"{col} ({dtype})" for col, dtype in df.dtypes])
@@ -109,9 +109,9 @@ def process_data():
 
         # Create temp view in Spark
         update_status("Executing query in Spark...")
-        
+
         df.createOrReplaceTempView("temp_view")
-        
+
         output_df = spark.sql(sql_query)
 
         # Save output to CSV
@@ -132,8 +132,6 @@ def process_data():
         update_status("Saving results to MySQL...")
         store_in_mysql(prescr_filename, input_text, sql_query, out)
 
-        
-
         file_mod = output_file[6:]
         output_file = 'C:' + file_mod
 
@@ -151,22 +149,28 @@ def process_data():
 
 
     except Exception as e:
+        update_status("Error occurred")
         error_message = str(e)
         prompt_text = (
             f"The following Spark error occurred:\n\n"
             f"{error_message}\n\n"
             f"Please analyze this error and suggest possible solutions."
-        )   
+        )
+        update_status("Trying to resolve error...")
         response = ollama.generate(
             model="llama3.2",
             system="You are an AI that helps troubleshoot Apache Spark errors. Provide clear, concise solutions.",
             prompt=prompt_text
         )
-
+        update_status("Error resolved")
         err = response.response
 
+        # Update status to done
+        status_message["status"] = "done"
         # Redirect to error solution page with details
-        return redirect(url_for("err_sol", file_name=prescr_filename, table_schema=table_schema, sql_query=sql_query, error_message=error_message, err=err))
+        return jsonify({"redirect": url_for("err_sol", file_name=prescr_filename, table_schema=table_schema,
+                                            sql_query=sql_query, error_message=error_message, err=err)})
+
 
 @app.route("/err_sol")
 def err_sol():
@@ -185,11 +189,13 @@ def err_sol():
         sql_query=sql_query
     )
 
+
 @app.route("/show")
 def show_result():
     """Show the processed data."""
     result = session.get("result", {})
     return render_template("show.html", result=result)
+
 
 @app.route("/history")
 def history():
@@ -227,6 +233,7 @@ def history():
             conn.close()
 
     return render_template("hist.html", records=records, page=page, has_next=has_next)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
